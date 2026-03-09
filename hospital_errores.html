@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis de Errores en Métodos Numéricos - Hospital RECREADO</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #764ba2;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .description {
+            background: #f0f4ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 5px solid #667eea;
+        }
+
+        .description h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .description p {
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .formula-box {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ffc107;
+        }
+
+        .formula-box h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .formula {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 0.95em;
+        }
+
+        .controls {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .control-group label {
+            color: #333;
+            font-weight: bold;
+            font-size: 0.95em;
+        }
+
+        .control-group input {
+            padding: 8px 12px;
+            border: 2px solid #667eea;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        button {
+            padding: 10px 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .results-section {
+            margin-top: 40px;
+        }
+
+        .results-title {
+            font-size: 1.8em;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .results-title::before {
+            content: '📊';
+            font-size: 1.2em;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+            font-size: 0.95em;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+            font-size: 0.9em;
+        }
+
+        tbody tr:hover {
+            background: #f5f5f5;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        .number {
+            text-align: center;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .highlight-positive {
+            background: #d4edda;
+            color: #155724;
+            font-weight: bold;
+            padding: 5px 8px;
+            border-radius: 3px;
+        }
+
+        .summary {
+            margin-top: 40px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .summary-card h4 {
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .summary-card .value {
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+
+        .error-explanation {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 30px;
+            border-left: 4px solid #2196F3;
+        }
+
+        .error-explanation h4 {
+            color: #1565c0;
+            margin-bottom: 10px;
+        }
+
+        .error-item {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .error-item strong {
+            color: #1565c0;
+        }
+
+        .formula-small {
+            background: #f5f5f5;
+            padding: 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            margin-top: 5px;
+            color: #333;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            table {
+                font-size: 0.8em;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 Análisis de Errores en Métodos Numéricos</h1>
+            <p>Contexto: Hospital - Cálculo de Dosis de Medicamento</p>
+            <p class="subtitle">Errores Absoluto, Relativo y Porcentual</p>
+        </div>
+
+        <div class="description">
+            <h3>📋 Descripción del Problema</h3>
+            <p>
+                En un hospital, se necesita calcular la dosis exacta de un medicamento para cada paciente.
+                La dosis se calcula en función del peso del paciente, la concentración del medicamento y
+                un factor de edad. Sin embargo, debido a limitaciones de precisión en sistemas numéricos,
+                se producen errores en el cálculo que pueden afectar la efectividad del tratamiento.
+            </p>
+            <p>
+                Este análisis demuestra los errores resultantes al usar precisión limitada en los cálculos
+                de dosis farmacéuticas.
+            </p>
+        </div>
+
+        <div class="formula-box">
+            <h4>📐 Función Matemática Utilizada</h4>
+            <div class="formula">
+                Dosis = (Peso_Paciente × Concentración × Factor_Edad) / 100
+            </div>
+            <p style="color: #666; margin-top: 10px;">
+                Donde:
+            </p>
+            <ul style="margin-left: 20px; color: #666; margin-top: 5px;">
+                <li><strong>Peso_Paciente:</strong> Peso en kilogramos</li>
+                <li><strong>Concentración:</strong> Concentración del medicamento (mg/mL) = 5</li>
+                <li><strong>Factor_Edad:</strong> Factor multiplicador según edad del paciente</li>
+                <li><strong>Factor_Edad = 50 + (Edad / 100) × 100</strong></li>
+            </ul>
+
+            <h4 style="margin-top: 20px; margin-bottom: 10px;">📊 Fórmulas de Errores</h4>
+            <div class="formula">
+                Error Absoluto (Ea) = |Valor_Exacto - Valor_Aproximado|
+            </div>
+            <div class="formula">
+                Error Relativo (Er) = |Valor_Exacto - Valor_Aproximado| / |Valor_Exacto|
+            </div>
+            <div class="formula">
+                Error Porcentual (Ep) = Error_Relativo × 100%
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="decimales">Decimales de Aproximación (0-5):</label>
+                <input type="number" id="decimales" min="0" max="5" value="1">
+            </div>
+            <h3>Usando estos decimales se puede controlar la precisión de los cálculos y reducir los errores instrumentales de ser posible en la vida real</h3>
+            <button onclick="calcularErrores()">Calcular Errores</button>
+        </div>
+
+        <div class="results-section">
+            <h3 class="results-title">Resultados del Análisis</h3>
+            <h3 style="color: #333; margin-bottom: 15px;">
+                La tabla a continuación muestra la dosis exacta calculada para cada paciente, la dosis aproximada
+                utilizando la cantidad de decimales seleccionada, y los errores correspondientes.
+            </h3>
+
+            <h4>Siendo la columna de Dosis Aproximada la variable del que se saca el error y si aumentamos los decimales de exactidud desaparece el error instrumental causado en a vida real</h4>
+            <table id="resultados">
+                <thead>
+                    <tr>
+                        <th class="number">#</th>
+                        <th>Paciente</th>
+                        <th>Peso (kg)</th>
+                        <th>Edad</th>
+                        <th>Dosis Exacta (mg)</th>
+                        <th>Dosis Aproximada (mg)</th>
+                        <th>Error Absoluto</th>
+                        <th>Error Relativo</th>
+                        <th>Error Porcentual (%)</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="summary" id="summary">
+        </div>
+
+        <div class="error-explanation">
+            <h4>📚 Explicación de los Tipos de Error</h4>
+            
+            <div class="error-item">
+                <strong>Error Absoluto (Ea):</strong> Es la diferencia directa entre el valor exacto y el valor aproximado.
+                <div class="formula-small">Ea = |Exacto - Aproximado|</div>
+                Se expresa en las mismas unidades que la variable (en este caso, miligramos de medicamento).
+            </div>
+
+            <div class="error-item">
+                <strong>Error Relativo (Er):</strong> Indica el error absoluto en relación al valor exacto.
+                <div class="formula-small">Er = Ea / |Exacto|</div>
+                Es útil para comparar errores entre diferentes magnitudes sin unidades.
+            </div>
+
+            <div class="error-item">
+                <strong>Error Porcentual (Ep):</strong> Es el error relativo expresado como porcentaje.
+                <div class="formula-small">Ep = Er × 100%</div>
+                Facilita la comprensión del error en términos de porcentaje del valor real.
+            </div>
+
+            <p style="margin-top: 15px; color: #333; line-height: 1.6;">
+                <strong>Importancia en contexto hospitalario:</strong> Un error porcentual bajo (< 1%) es generalmente 
+                aceptable en dosificación de medicamentos, pero errores mayores pueden comprometer la efectividad del 
+                tratamiento o causar efectos secundarios.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Datos de 10 pacientes del hospital - Con decimales para generar errores
+        const pacientes = [
+            { nombre: "Paciente 1", peso: 65.73, edad: 30 },
+            { nombre: "Paciente 2", peso: 78.45, edad: 45 },
+            { nombre: "Paciente 3", peso: 52.18, edad: 72 },
+            { nombre: "Paciente 4", peso: 85.92, edad: 35 },
+            { nombre: "Paciente 5", peso: 48.67, edad: 28 },
+            { nombre: "Paciente 6", peso: 92.34, edad: 55 },
+            { nombre: "Paciente 7", peso: 70.56, edad: 42 },
+            { nombre: "Paciente 8", peso: 58.89, edad: 67 },
+            { nombre: "Paciente 9", peso: 88.12, edad: 38 },
+            { nombre: "Paciente 10", peso: 75.43, edad: 50 }
+        ];
+
+        // Parámetros del medicamento
+        const CONCENTRACION = 5; // mg/mL
+
+        /**
+         * FUNCIÓN PRINCIPAL: Calcula la dosis del medicamento
+         * Parámetros:
+         *   - peso: peso del paciente en kg
+         *   - edad: edad del paciente en años
+         * Retorna: dosis calculada en mg
+         */
+        function calcularDosis(peso, edad) {
+            // Factor de edad: aumenta con la edad (50% a 150%)
+            let factorEdad = 50 + (edad / 100) * 100; // Rango 50-150
+            
+            // Fórmula: Dosis = (Peso × Concentración × Factor_Edad) / 100
+            let dosis = (peso * CONCENTRACION * factorEdad) / 100;
+            
+            return dosis;
+        }
+
+        /**
+         * Calcula el error absoluto
+         * Parámetros:
+         *   - valorExacto: valor sin aproximación
+         *   - valorAproximado: valor con aproximación numérica
+         * Retorna: error absoluto
+         */
+        function calcularErrorAbsoluto(valorExacto, valorAproximado) {
+            return Math.abs(valorExacto - valorAproximado);
+        }
+
+        /**
+         * Calcula el error relativo
+         * Parámetros:
+         *   - valorExacto: valor sin aproximación
+         *   - valorAproximado: valor con aproximación numérica
+         * Retorna: error relativo (decimal)
+         */
+        function calcularErrorRelativo(valorExacto, valorAproximado) {
+            let errorAbsoluto = calcularErrorAbsoluto(valorExacto, valorAproximado);
+            return errorAbsoluto / Math.abs(valorExacto);
+        }
+
+        /**
+         * Calcula el error porcentual
+         * Parámetros:
+         *   - valorExacto: valor sin aproximación
+         *   - valorAproximado: valor con aproximación numérica
+         * Retorna: error en porcentaje (%)
+         */
+        function calcularErrorPorcentual(valorExacto, valorAproximado) {
+            return calcularErrorRelativo(valorExacto, valorAproximado) * 100;
+        }
+
+        /**
+         * FUNCIÓN DE APROXIMACIÓN: Trunca un valor a N decimales (sin redondear)
+         * Simula perdida de precision en sistemas numericos
+         * Parámetros:
+         *   - valor: valor a aproximar
+         *   - decimales: número de decimales a los que aproximar
+         * Retorna: valor aproximado por truncamiento
+         */
+        function aproximarValor(valor, decimales) {
+            let multiplicador = Math.pow(10, decimales);
+            // Usar Math.trunc para truncar correctamente
+            return Math.trunc(valor * multiplicador) / multiplicador;
+        }
+
+        function calcularErrores() {
+            const decimales = parseInt(document.getElementById('decimales').value);
+            const tbody = document.getElementById('tbody');
+            tbody.innerHTML = '';
+
+            let sumErroresAbsolutos = 0;
+            let sumErroresRelativos = 0;
+            let sumErroresPorcentuales = 0;
+
+            pacientes.forEach((paciente, index) => {
+                // Calcular dosis exacta con máxima precisión
+                let dosisExacta = calcularDosis(paciente.peso, paciente.edad);
+
+                // Calcular dosis aproximada (truncada a N decimales)
+                let dosisAproximada = aproximarValor(dosisExacta, decimales);
+
+                // Calcular errores
+                let errorAbsoluto = calcularErrorAbsoluto(dosisExacta, dosisAproximada);
+                let errorRelativo = calcularErrorRelativo(dosisExacta, dosisAproximada);
+                let errorPorcentual = calcularErrorPorcentual(dosisExacta, dosisAproximada);
+
+                // Acumular para promedios
+                sumErroresAbsolutos += errorAbsoluto;
+                sumErroresRelativos += errorRelativo;
+                sumErroresPorcentuales += errorPorcentual;
+
+                // Crear fila con muchos decimales para ver las diferencias
+                let row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="number">${index + 1}</td>
+                    <td>${paciente.nombre}</td>
+                    <td>${paciente.peso.toFixed(2)}</td>
+                    <td>${paciente.edad}</td>
+                    <td>${dosisExacta.toFixed(8)}</td>
+                    <td><span class="highlight-positive">${dosisAproximada.toFixed(Math.max(decimales, 0))}</span></td>
+                    <td>${errorAbsoluto.toFixed(8)}</td>
+                    <td>${errorRelativo.toFixed(8)}</td>
+                    <td>${errorPorcentual.toFixed(6)}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // Calcular promedios
+            let promErrorAbsoluto = sumErroresAbsolutos / pacientes.length;
+            let promErrorRelativo = sumErroresRelativos / pacientes.length;
+            let promErrorPorcentual = sumErroresPorcentuales / pacientes.length;
+
+            // Mostrar resumen
+            const summary = document.getElementById('summary');
+            summary.innerHTML = `
+                <div class="summary-card">
+                    <h4>Promedio Error Absoluto (mg)</h4>
+                    <div class="value">${promErrorAbsoluto.toFixed(8)}</div>
+                </div>
+                <div class="summary-card">
+                    <h4>Promedio Error Relativo</h4>
+                    <div class="value">${promErrorRelativo.toFixed(8)}</div>
+                </div>
+                <div class="summary-card">
+                    <h4>Promedio Error Porcentual (%)</h4>
+                    <div class="value">${promErrorPorcentual.toFixed(6)}%</div>
+                </div>
+                <div class="summary-card">
+                    <h4>Decimales Utilizados</h4>
+                    <div class="value">${decimales}</div>
+                </div>
+            `;
+        }
+
+        // Calcular automáticamente al cargar la página
+        window.addEventListener('load', function() {
+            calcularErrores();
+        });
+    </script>
+</body>
+</html>
